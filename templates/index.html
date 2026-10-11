@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FindIt — Community Lost and Found Portal</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z'/></svg>">
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand-link">
+        <div class="brand-logo">🔍</div>
+        <div class="brand-text">Find<span>It</span></div>
+      </a>
+      <nav class="nav-links">
+        <a href="#listings" class="nav-link active" onclick="setQuickTab('all')">Browse All</a>
+        <a href="#listings" class="nav-link" onclick="setQuickTab('lost')">Lost Items</a>
+        <a href="#listings" class="nav-link" onclick="setQuickTab('found')">Found Items</a>
+        <a href="/admin" class="nav-link">Admin Portal</a>
+        <button class="btn btn-primary" onclick="openReportModal()">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Report Item
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span>🤝</span> Community Lost & Found Network
+      </div>
+      <h1>Find What's Lost.<br>Return What's Found.</h1>
+      <p>Connecting neighbors, campuses, and local spaces to safely reunite people with their misplaced possessions.</p>
+
+      <!-- METRICS COUNTERS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">-</div>
+          <div class="stat-label">Total Listings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--lost-color);" id="stat-lost">-</div>
+          <div class="stat-label">Active Lost</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--found-color);" id="stat-found">-</div>
+          <div class="stat-label">Active Found</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--returned-color);" id="stat-returned">-</div>
+          <div class="stat-label">Reunited</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH & FILTER BAR -->
+  <section class="search-container">
+    <div class="search-box-card">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input 
+          type="text" 
+          id="search-input" 
+          class="search-input" 
+          placeholder="Search by keyword, item name, or location..." 
+          autocomplete="off"
+        >
+      </div>
+
+      <select id="category-filter" class="filter-select">
+        <option value="all">All Categories</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Wallets & Bags">Wallets & Bags</option>
+        <option value="Keys">Keys</option>
+        <option value="Documents & Books">Documents & Books</option>
+        <option value="Pets">Pets</option>
+        <option value="Clothing & Accessories">Clothing & Accessories</option>
+        <option value="Jewelry">Jewelry</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <select id="status-filter" class="filter-select">
+        <option value="all">All Statuses</option>
+        <option value="active">Active Only</option>
+        <option value="returned">Reunited / Returned</option>
+      </select>
+
+      <button class="btn btn-outline" onclick="resetFilters()">Reset</button>
+    </div>
+  </section>
+
+  <!-- QUICK CATEGORY TABS -->
+  <div class="filter-tabs" id="quick-tabs">
+    <button class="tab-btn active" data-tab="all" onclick="setQuickTab('all')">All Listings</button>
+    <button class="tab-btn" data-tab="lost" onclick="setQuickTab('lost')">🔍 Lost Items</button>
+    <button class="tab-btn" data-tab="found" onclick="setQuickTab('found')">🎁 Found Items</button>
+    <button class="tab-btn" data-tab="returned" onclick="setQuickTab('returned')">🎉 Reunited / Resolved</button>
+  </div>
+
+  <!-- MAIN LISTING VIEW -->
+  <main class="main-container" id="listings">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span id="current-view-title">Community Listings</span>
+        <span class="item-count-badge" id="items-count-display">0 items</span>
+      </h2>
+      <button class="btn btn-sm btn-outline" onclick="loadItems()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- CARDS GRID CONTAINER -->
+    <div class="items-grid" id="items-grid">
+      <!-- Populated dynamically via app.js -->
+    </div>
+  </main>
+
+  <!-- REPORT ITEM MODAL -->
+  <div class="modal-backdrop" id="report-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="report-modal-title">Report an Item</h3>
+        <button class="modal-close-btn" onclick="closeReportModal()">&times;</button>
+      </div>
+      <form id="report-form" onsubmit="handleReportSubmit(event)">
+        <div class="modal-body">
+          
+          <!-- TYPE SELECTION BUTTONS -->
+          <label class="form-label">What are you reporting? <span class="req">*</span></label>
+          <div class="type-toggle-group">
+            <div 
+              class="type-radio-btn selected-lost" 
+              id="type-btn-lost" 
+              onclick="selectReportType('lost')"
+            >
+              <span>🔴</span> I Lost Something
+            </div>
+            <div 
+              class="type-radio-btn" 
+              id="type-btn-found" 
+              onclick="selectReportType('found')"
+            >
+              <span>🟢</span> I Found Something
+            </div>
+          </div>
+          <input type="hidden" name="type" id="report-type" value="lost">
+
+          <!-- ITEM TITLE -->
+          <div class="form-group">
+            <label class="form-label" for="report-title">Item Title / Name <span class="req">*</span></label>
+            <input 
+              type="text" 
+              id="report-title" 
+              name="title" 
+              class="form-input" 
+              placeholder="e.g., Black Leather Bifold Wallet or Silver Keys" 
+              required 
+              maxlength="120"
+            >
+          </div>
+
+          <!-- CATEGORY & DATE -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="report-category">Category <span class="req">*</span></label>
+              <select id="report-category" name="category" class="form-select" required>
+                <option value="">Select category...</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Wallets & Bags">Wallets & Bags</option>
+                <option value="Keys">Keys</option>
+                <option value="Documents & Books">Documents & Books</option>
+                <option value="Pets">Pets</option>
+                <option value="Clothing & Accessories">Clothing & Accessories</option>
+                <option value="Jewelry">Jewelry</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="report-date">Date Incident Happened <span class="req">*</span></label>
+              <input type="date" id="report-date" name="date_event" class="form-input" required>
+            </div>
+          </div>
+
+          <!-- LOCATION -->
+          <div class="form-group">
+            <label class="form-label" for="report-location">Location <span class="req">*</span></label>
+            <input 
+              type="text" 
+              id="report-location" 
+              name="location" 
+              class="form-input" 
+              placeholder="e.g., Campus Library 2nd Floor, Park Bench, Bus #12" 
+              required 
+              maxlength="150"
+            >
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="form-group">
+            <label class="form-label" for="report-desc">Detailed Description <span class="req">*</span></label>
+            <textarea 
+              id="report-desc" 
+              name="description" 
+              class="form-textarea" 
+              placeholder="Describe distinguishing marks, brand, color, contents, unique scratches, or accessories..." 
+              required
+              maxlength="2000"
+            ></textarea>
+          </div>
+
+          <!-- CONTACT INFO & PRIVACY NOTICE -->
+          <div class="privacy-box">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <div>
+              <strong>Privacy Protection:</strong> Contact details are masked on public listing cards. They are only revealed when someone clicks to contact you to arrange a return.
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="report-contact-name">Your Name <span class="req">*</span></label>
+              <input type="text" id="report-contact-name" name="contact_name" class="form-input" placeholder="e.g., Alex Morgan" required maxlength="80">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="report-contact-info">Phone or Email <span class="req">*</span></label>
+              <input type="text" id="report-contact-info" name="contact_info" class="form-input" placeholder="e.g., alex@email.com or (555) 123-4567" required maxlength="100">
+            </div>
+          </div>
+
+          <!-- OPTIONAL PHOTO UPLOAD -->
+          <div class="form-group">
+            <label class="form-label">Attach Item Photo (Optional)</label>
+            <div class="image-upload-area" onclick="document.getElementById('photo-input').click()">
+              <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 0.5rem; color: #94a3b8;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <p style="font-size: 0.9rem; color: var(--text-muted);">Click to upload a clear photo (JPG, PNG, WEBP — Max 5MB)</p>
+              <input type="file" id="photo-input" name="photo" accept="image/*" style="display: none;" onchange="previewPhoto(event)">
+            </div>
+            <div id="image-preview-container" class="image-preview-box" style="display: none;">
+              <img id="image-preview" src="" alt="Preview">
+              <button type="button" class="remove-img-btn" onclick="clearPhoto()" title="Remove photo">&times;</button>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeReportModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="report-submit-btn">Publish Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DETAILS & CONTACT MODAL -->
+  <div class="modal-backdrop" id="details-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-item-title">Item Details</h3>
+        <button class="modal-close-btn" onclick="closeDetailsModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-item-badges" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;"></div>
+        <div id="modal-photo-container"></div>
+
+        <div style="margin-bottom: 1rem;">
+          <h4 style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.25rem;">Description</h4>
+          <p id="modal-item-desc" style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5; color: var(--text-main);"></p>
+        </div>
+
+        <div class="item-meta" style="font-size: 0.9rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+          <div class="meta-row">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+            <strong>Location:</strong> <span id="modal-item-location"></span>
+          </div>
+          <div class="meta-row">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+            <strong>Date Reported:</strong> <span id="modal-item-date"></span>
+          </div>
+        </div>
+
+        <!-- REVEAL CONTACT SECTION -->
+        <div class="contact-reveal-box">
+          <h4 style="font-size: 1.05rem; margin-bottom: 0.4rem;">Need to return or claim this item?</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Contact details are kept private to protect our users. Click below to view the verified reporter's contact info.
+          </p>
+          <button class="btn btn-primary" id="reveal-contact-btn" onclick="revealContact()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Reveal Contact Details
+          </button>
+
+          <div id="unmasked-contact-area" class="contact-unmasked" style="display: none;">
+            <div class="contact-unmasked-item">
+              <span style="color: var(--text-muted);">Reporter:</span>
+              <strong id="unmasked-name">-</strong>
+            </div>
+            <div class="contact-unmasked-item">
+              <span style="color: var(--text-muted);">Contact:</span>
+              <strong id="unmasked-info">-</strong>
+            </div>
+            <div style="margin-top: 0.75rem; text-align: center;">
+              <a id="unmasked-action-btn" href="#" class="btn btn-sm btn-outline" style="text-decoration: none;">Reach Out Now</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeDetailsModal()">Close</button>
+        <button class="btn btn-return" id="modal-toggle-return-btn" onclick="toggleReturnFromModal()">Mark as Reunited</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST ALERTS NOTIFICATIONS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div>
+        <strong>FindIt</strong> — Community Lost & Found Portal
+      </div>
+      <div>
+        Built with FastAPI & SQLite • Safe Community Moderation
+      </div>
+      <div>
+        <a href="/admin" style="color: var(--primary); text-decoration: none; font-weight: 600;">Admin Dashboard</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

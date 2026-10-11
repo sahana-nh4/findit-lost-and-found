@@ -1,0 +1,30 @@
+# Python byte-code and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local SQLite databases (prevent committing local state or sensitive test data)
+*.db
+*.sqlite3
+findit.db
+
+# Uploaded media (preserve directory structure with .gitkeep)
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini

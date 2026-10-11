@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FindIt — Admin Portal & Moderation</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z'/></svg>">
+</head>
+<body>
+
+  <!-- ADMIN NAVBAR -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand-link">
+        <div class="brand-logo">🛡️</div>
+        <div class="brand-text">Find<span>It</span> <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">Admin Portal</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">← Back to Portal</a>
+        <button id="admin-logout-btn" class="btn btn-sm btn-outline" style="display: none;" onclick="adminLogout()">Lock / Exit</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container" style="padding-top: 2rem;">
+    
+    <!-- ADMIN AUTH / PASSCODE SCREEN -->
+    <div id="admin-login-view" class="admin-login-card">
+      <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔐</div>
+      <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">Admin Moderation Panel</h2>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+        Enter the administrative passkey to review listings, inspect reporter contact info, and remove inappropriate items.
+      </p>
+
+      <div class="privacy-box" style="text-align: left; margin-bottom: 1.25rem;">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        <div>
+          <strong>Development Mode:</strong> Default admin passcode is <code>admin123</code> (configurable via <code>ADMIN_PASSCODE</code> env variable).
+        </div>
+      </div>
+
+      <form id="admin-login-form" onsubmit="handleAdminLogin(event)">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="admin-passcode">Admin Passkey</label>
+          <input 
+            type="password" 
+            id="admin-passcode" 
+            class="form-input" 
+            placeholder="Enter passcode (default: admin123)" 
+            required
+            autocomplete="current-password"
+          >
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Unlock Admin Dashboard</button>
+      </form>
+    </div>
+
+    <!-- ADMIN DASHBOARD (HIDDEN UNTIL UNLOCKED) -->
+    <div id="admin-dashboard-view" style="display: none;">
+      
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">🛡️ Listing Moderation Dashboard</h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            Manage and audit community submissions. Contact details are shown in full for administrative review.
+          </p>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="loadAdminItems()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Refresh Data
+        </button>
+      </div>
+
+      <!-- ADMIN FILTER BAR -->
+      <div class="search-box-card" style="margin-bottom: 1.5rem;">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input 
+            type="text" 
+            id="admin-search-input" 
+            class="search-input" 
+            placeholder="Search items by title, reporter, or description..."
+            oninput="filterAdminTable()"
+          >
+        </div>
+
+        <select id="admin-type-filter" class="filter-select" onchange="filterAdminTable()">
+          <option value="all">All Types (Lost & Found)</option>
+          <option value="lost">Lost Items Only</option>
+          <option value="found">Found Items Only</option>
+        </select>
+
+        <select id="admin-status-filter" class="filter-select" onchange="filterAdminTable()">
+          <option value="all">All Statuses</option>
+          <option value="active">Active Only</option>
+          <option value="returned">Returned / Resolved</option>
+        </select>
+      </div>
+
+      <!-- ADMIN DATA TABLE -->
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Type</th>
+              <th>Title & Details</th>
+              <th>Category</th>
+              <th>Location & Date</th>
+              <th>Reporter & Contact</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body">
+            <!-- Dynamically populated via admin.js -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div><strong>FindIt</strong> — Administrative Console</div>
+      <div>Local Development & Community Moderation</div>
+      <div><a href="/" style="color: var(--primary); text-decoration: none;">Return to Public Portal</a></div>
+    </div>
+  </footer>
+
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>
